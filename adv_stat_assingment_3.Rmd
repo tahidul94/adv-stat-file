@@ -1,0 +1,137 @@
+---
+title: "Assignment 3"
+author: "Md Tahidul Islam"
+date: "2023-11-08"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Setup: working directory
+
+```{r set-working-directory}
+
+# set your working directory to the current file directory 
+tryCatch({
+  library(rstudioapi)
+  setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+  }, error=function(cond){message(paste("cannot change working directory"))
+})
+
+```
+
+**Q2**
+```{r}
+#for multiple regression
+p <- 3. # numerator
+n <- 47
+df_denominator <- n-p-1.  #denominator
+df_denominator      
+```
+
+**Q7**
+```{r}
+SST <-200 
+SSE <- 50
+SSR <- SST -SSE # SST= SSR + SSE
+R_sq <- SSR / SST
+R_sq
+```
+
+**Q8**
+```{r slm}
+cpu_data <- read.csv("dataset1.csv")
+#plot(Performance ~ Frequency,data = cpu_data)
+cpu_data_lm <- lm(Performance ~ Frequency, data = cpu_data) # linear model function of R
+summary(cpu_data_lm)  #overview of the model results 
+report(cpu_data_lm)
+```
+
+**Q13**
+
+```{r}
+attributes(cpu_data_lm)
+hist(cpu_data_lm$residuals)
+autoplot(cpu_data_lm)
+#...........
+plot(cpu_data_lm, pch = 16, col = "blue")
+abline(cpu_data_lm)
+check_autocorrelation(cpu_data_lm)
+
+```
+
+
+**Q14**
+```{r}
+car_value <- read.csv("dataset2.csv")
+#colnames(car_value) <- gsub("\\.", "_", colnames(car_value)) # colunm renaming
+
+#a multiple linear regression model
+car_value_model <- lm(Value.Score ~ ., data = car_value)
+
+# Summary of the regression model
+summary(car_value_model)
+ report(car_value_model) # easystat lib
+
+#......
+# tbl_regression(car_value_model)  #library(gtsummary)
+# car_value_model %>% check_collinearity()
+# # we can also add this to the previous summary table:
+# tbl_regression(car_value_model) %>% add_vif()
+
+#...
+check_model(car_value_model)
+autoplot(car_value_model)
+
+
+#.............18
+residuals <- residuals(car_value_model)
+#predicted values from the model
+predicted <- predict(car_value_model)
+qplot(predicted, residuals, geom = "smooth")
+qqnorm(residuals)
+qqline(residuals, col = 2)
+hist(residuals, main = "Histogram of Residuals", xlab = "Residuals")
+qplot(residuals, geom = "density")
+
+
+#....
+leverage_values <- influence(car_value_model)$hat
+# Identify high leverage points
+high_leverage_points <- which(leverage_values > (2 * (ncol(car_value) + 1) / nrow(car_value)))
+# View the high leverage points
+high_leverage_points
+
+```
+
+
+
+**Q19***
+
+```{r}
+car_value$Size <- as.factor(car_value$Size)
+#baseline category for 'Size' to 'Upscale Sedan'
+car_value$Size <- relevel(car_value$Size, ref = "Upscale Sedan")
+# Rebuild the model with the new baseline
+new_model <- lm(Value.Score ~ ., data = car_value)
+# Summary of the new regression model
+summary(new_model)
+```
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+```{r}
+#test
+# x <-car_value$Road.Score
+# plot(x, resid(new_model))
+# lines(lowess(x, resid(new_model)), col = "red")
+```
